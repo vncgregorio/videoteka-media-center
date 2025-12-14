@@ -1,0 +1,46 @@
+app-id: org.videoteka.MediaCenter
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: videoteka
+finish-args:
+  - --share=network
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=home
+  - --filesystem=host
+
+modules:
+  - name: python3
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} PySide6 Pillow mutagen PyMuPDF opencv-python-headless
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/P/PySide6/PySide6-6.6.0.tar.gz
+        sha256: CHECKSUM_HERE
+      - type: file
+        url: https://files.pythonhosted.org/packages/source/P/Pillow/Pillow-10.0.0.tar.gz
+        sha256: CHECKSUM_HERE
+
+  - name: videoteka
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 src/main.py ${FLATPAK_DEST}/bin/videoteka
+      - cp -r src ${FLATPAK_DEST}/lib/videoteka/
+      - cp -r resources ${FLATPAK_DEST}/share/videoteka/
+    sources:
+      - type: dir
+        path: ../..
+
+  - name: videoteka-data
+    buildsystem: simple
+    build-commands:
+      - mkdir -p ${FLATPAK_DEST}/share/videoteka/data
+    sources:
+      - type: dir
+        path: ../../data
+
+

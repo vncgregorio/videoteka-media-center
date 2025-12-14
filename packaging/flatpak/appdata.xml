@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.videoteka.MediaCenter</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0</project_license>
+  <name>Videoteka Media Center</name>
+  <summary>A desktop media center application for Linux</summary>
+  <description>
+    <p>
+      Videoteka is a modern desktop media center application for Linux systems.
+      It provides a streaming-style interface for browsing and organizing your
+      multimedia files including videos, audio, images, and PDF documents.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Beautiful streaming-style interface</li>
+      <li>Support for videos, audio, images, and PDFs</li>
+      <li>Automatic thumbnail generation</li>
+      <li>Keyboard navigation</li>
+      <li>Media preview capabilities</li>
+      <li>Portable SQLite database</li>
+    </ul>
+  </description>
+  <url type="homepage">https://github.com/videoteka/media-center</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main interface</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.1.0" date="2024-01-01">
+      <description>
+        <p>Initial release</p>
+      </description>
+    </release>
+  </releases>
+</component>
+
+

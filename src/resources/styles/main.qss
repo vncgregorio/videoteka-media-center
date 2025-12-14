@@ -1,0 +1,238 @@
+/* Videoteka Media Center - Dark Streaming Style Theme */
+
+/* Global Styles */
+QMainWindow {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+QWidget {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: "Segoe UI", "Roboto", "Ubuntu", sans-serif;
+    font-size: 12px;
+}
+
+/* Menu Bar */
+QMenuBar {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border-bottom: 1px solid #333333;
+    padding: 4px;
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected {
+    background-color: #2a2a2a;
+}
+
+QMenuBar::item:pressed {
+    background-color: #333333;
+}
+
+QMenu {
+    background-color: #1a1a1a;
+    border: 1px solid #444444;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+QMenu::item {
+    padding: 6px 24px 6px 12px;
+    border-radius: 3px;
+}
+
+QMenu::item:selected {
+    background-color: #0078d4;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #333333;
+    margin: 4px 8px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #2a2a2a;
+    border: 1px solid #444444;
+    border-radius: 4px;
+    padding: 8px 16px;
+    color: #ffffff;
+    min-height: 20px;
+}
+
+QPushButton:hover {
+    background-color: #333333;
+    border-color: #555555;
+}
+
+QPushButton:pressed {
+    background-color: #1a1a1a;
+    border-color: #0078d4;
+}
+
+QPushButton:focus {
+    border-color: #0078d4;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #1a1a1a;
+    color: #666666;
+    border-color: #333333;
+}
+
+/* Line Edit */
+QLineEdit {
+    background-color: #2a2a2a;
+    border: 1px solid #444444;
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #ffffff;
+    selection-background-color: #0078d4;
+}
+
+QLineEdit:focus {
+    border-color: #0078d4;
+    outline: none;
+}
+
+QLineEdit:disabled {
+    background-color: #1a1a1a;
+    color: #666666;
+}
+
+/* List Widget */
+QListWidget {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    color: #ffffff;
+    outline: none;
+}
+
+QListWidget::item {
+    padding: 8px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+QListWidget::item:selected {
+    background-color: #0078d4;
+    color: #ffffff;
+}
+
+QListWidget::item:hover {
+    background-color: #2a2a2a;
+}
+
+/* Scroll Bar */
+QScrollBar:vertical {
+    background-color: #1a1a1a;
+    width: 12px;
+    border: none;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #444444;
+    min-height: 30px;
+    border-radius: 6px;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #555555;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background-color: #1a1a1a;
+    height: 12px;
+    border: none;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #444444;
+    min-width: 30px;
+    border-radius: 6px;
+    margin: 2px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #555555;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* Progress Bar */
+QProgressBar {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    text-align: center;
+    color: #ffffff;
+    height: 20px;
+}
+
+QProgressBar::chunk {
+    background-color: #0078d4;
+    border-radius: 3px;
+}
+
+/* Dialog */
+QDialog {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+/* Label */
+QLabel {
+    color: #ffffff;
+}
+
+/* Message Box */
+QMessageBox {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+QMessageBox QLabel {
+    color: #ffffff;
+    min-width: 300px;
+}
+
+QMessageBox QPushButton {
+    min-width: 80px;
+    padding: 6px 20px;
+}
+
+/* Transitions and Animations */
+QPushButton {
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+QLineEdit {
+    transition: border-color 0.2s;
+}
+
+/* Focus indicators */
+QWidget:focus {
+    outline: 2px solid #0078d4;
+    outline-offset: 2px;
+}
+
+
