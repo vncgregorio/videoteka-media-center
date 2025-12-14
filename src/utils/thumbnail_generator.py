@@ -1,10 +1,29 @@
 """Thumbnail generator for various media types."""
 
+import contextlib
 import hashlib
+import os
+import sys
 from pathlib import Path
 from typing import Optional, Tuple
 
 from PIL import Image
+
+
+@contextlib.contextmanager
+def suppress_stderr():
+    """Temporarily suppress stderr to hide FFmpeg/AV1 error messages.
+    
+    Yields:
+        None
+    """
+    with open(os.devnull, 'w') as devnull:
+        old_stderr = sys.stderr
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stderr = old_stderr
 
 
 class ThumbnailGenerator:
@@ -85,33 +104,70 @@ class ThumbnailGenerator:
         Returns:
             PIL Image or None
         """
+        cap = None
         try:
             import cv2
 
-            cap = cv2.VideoCapture(file_path)
-            if not cap.isOpened():
-                return None
+            # Suppress OpenCV logging to hide FFmpeg/AV1 warnings
+            # OpenCV uses different log levels: 0=SILENT, 1=FATAL, 2=ERROR, 3=WARN, 4=INFO, 5=DEBUG, 6=VERBOSE
+            old_log_level = cv2.getLogLevel()
+            cv2.setLogLevel(0)  # Set to SILENT to suppress all OpenCV/FFmpeg messages
 
-            # Get total frames
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            if total_frames == 0:
-                cap.release()
-                return None
+            try:
+                # Suppress stderr to hide FFmpeg/AV1 error messages (additional layer)
+                with suppress_stderr():
+                    # Try to open video file
+                    cap = cv2.VideoCapture(file_path)
+                    if not cap.isOpened():
+                        return None
 
-            # Seek to 25% of video
-            target_frame = int(total_frames * 0.25)
-            cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+                    # Get total frames - handle potential AV1/codec errors
+                    try:
+                        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                    except (ValueError, OverflowError):
+                        # AV1 or other codec issues may cause invalid frame counts
+                        return None
 
-            ret, frame = cap.read()
-            cap.release()
+                    if total_frames <= 0:
+                        return None
 
-            if ret and frame is not None:
-                # Convert BGR to RGB
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                return Image.fromarray(frame_rgb)
+                    # Seek to 25% of video, but try first frame if seek fails
+                    target_frame = max(0, int(total_frames * 0.25))
+                    try:
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+                    except Exception:
+                        # If seek fails, try first frame
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-        except Exception:
+                    # Read frame with timeout handling
+                    ret, frame = cap.read()
+
+                    if ret and frame is not None and frame.size > 0:
+                        # Convert BGR to RGB
+                        try:
+                            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                            return Image.fromarray(frame_rgb)
+                        except Exception:
+                            # Color conversion failed
+                            return None
+            finally:
+                # Restore original OpenCV log level
+                cv2.setLogLevel(old_log_level)
+
+        except (OSError, IOError, MemoryError) as e:
+            # Handle AV1 codec errors, missing headers, or memory issues
+            # These are often the cause of "AV1 missing header" errors
             pass
+        except Exception:
+            # Catch any other unexpected errors
+            pass
+        finally:
+            # Always release VideoCapture to prevent memory leaks
+            if cap is not None:
+                try:
+                    cap.release()
+                except Exception:
+                    pass
 
         return None
 

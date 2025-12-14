@@ -145,9 +145,9 @@ class MainWindow(QMainWindow):
                     return
                 
                 # Otherwise, navigate grid directly
-                if self.media_grid.cards:
-                    # Ensure a card has focus before navigating
-                    if self.media_grid.focused_card_index < 0:
+                if self.media_grid.all_media_files:
+                    # Ensure a media item has focus before navigating
+                    if self.media_grid.focused_media_index < 0:
                         self.media_grid.focus_first()
                         event.accept()
                         return
@@ -204,7 +204,7 @@ class MainWindow(QMainWindow):
         """Handle escape key."""
         # If categories have focus, return focus to grid
         if self.category_panel.category_list.hasFocus():
-            if self.media_grid.cards:
+            if self.media_grid.all_media_files:
                 self.media_grid.focus_first()
 
     def _focus_categories(self) -> None:
@@ -217,8 +217,8 @@ class MainWindow(QMainWindow):
         """Focus the media grid."""
         # Enable Enter shortcut when focusing grid
         self.shortcut_enter.setEnabled(True)
-        if self.media_grid.cards:
-            # Focus the MediaGrid widget first, then focus first card
+        if self.media_grid.all_media_files:
+            # Focus the MediaGrid widget first, then focus first media item
             self.media_grid.setFocus()
             self.media_grid.focus_first()
 

@@ -113,11 +113,13 @@ class AppController:
         # IMPORTANT: Don't move focus - keep focus on categories
         self._load_media(category=category)
 
-    def _load_media(self, category: Optional[str] = None) -> None:
+    def _load_media(self, category: Optional[str] = None, limit: Optional[int] = None, offset: Optional[int] = None) -> None:
         """Load media files and display in grid.
         
         Args:
             category: Optional category to filter by
+            limit: Maximum number of results (default: 100 for pagination)
+            offset: Offset for pagination
         """
         if not self.media_controller or not self.main_window:
             return
@@ -130,13 +132,21 @@ class AppController:
         if category is None:
             category = ""
 
-        # Get media files for category
+        # Apply default pagination limit if not specified
+        if limit is None:
+            limit = 100
+        if offset is None:
+            offset = 0
+
+        # Get media files for category with pagination
         if category:
             media_files = self.media_controller.get_media_files_by_category(
-                category
+                category, limit=limit, offset=offset
             )
         else:
-            media_files = self.media_controller.get_media_files()
+            media_files = self.media_controller.get_media_files(
+                limit=limit, offset=offset
+            )
 
         # Update grid WITHOUT moving focus
         self.main_window.set_media_files(media_files, self.thumbnail_generator)

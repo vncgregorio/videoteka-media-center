@@ -405,6 +405,8 @@ class Database:
         root_folders: List[str],
         file_type: Optional[str] = None,
         search_query: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[Dict]:
         """Get media files filtered by category.
 
@@ -413,6 +415,8 @@ class Database:
             root_folders: List of root folder paths
             file_type: Optional filter by media type
             search_query: Optional search query
+            limit: Maximum number of results
+            offset: Offset for pagination
 
         Returns:
             List of media file dictionaries
@@ -455,6 +459,14 @@ class Database:
             params.append(f"%{search_query}%")
 
         query += " ORDER BY file_name ASC"
+
+        if limit:
+            query += " LIMIT ?"
+            params.append(limit)
+
+        if offset:
+            query += " OFFSET ?"
+            params.append(offset)
 
         cursor.execute(query, params)
         rows = cursor.fetchall()

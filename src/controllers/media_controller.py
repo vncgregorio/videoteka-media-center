@@ -34,12 +34,16 @@ class MediaController:
             file_type: Filter by type ('video', 'audio', 'image', 'document')
             search_query: Search in file names
             folder_path: Filter by folder
-            limit: Maximum number of results
+            limit: Maximum number of results (default: 100 for pagination)
             offset: Offset for pagination
 
         Returns:
             List of media file dictionaries
         """
+        # Apply default pagination limit if not specified
+        if limit is None:
+            limit = 100
+
         media_files = self.database.get_media_files(
             file_type=file_type if file_type != "all" else None,
             folder_path=folder_path,
@@ -48,23 +52,8 @@ class MediaController:
             offset=offset,
         )
 
-        # Ensure thumbnails are generated
-        for media_file in media_files:
-            if not media_file.get("thumbnail_path"):
-                file_path = media_file.get("file_path")
-                file_type_str = media_file.get("file_type")
-                if file_path and file_type_str:
-                    thumbnail_path = self.thumbnail_generator.generate_thumbnail(
-                        file_path, file_type_str
-                    )
-                    if thumbnail_path:
-                        media_file["thumbnail_path"] = thumbnail_path
-                        # Update database
-                        file_id = media_file.get("id")
-                        if file_id:
-                            self.database.update_media_file(
-                                file_id, {"thumbnail_path": thumbnail_path}
-                            )
+        # Note: Thumbnail generation is now handled asynchronously in the UI
+        # to avoid blocking the main thread with large datasets
 
         return media_files
 
@@ -125,6 +114,8 @@ class MediaController:
         category: str,
         file_type: Optional[str] = None,
         search_query: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[dict]:
         """Get media files filtered by category.
 
@@ -132,6 +123,8 @@ class MediaController:
             category: Category name (empty string for all)
             file_type: Optional filter by type
             search_query: Optional search query
+            limit: Maximum number of results (default: 100 for pagination)
+            offset: Offset for pagination
 
         Returns:
             List of media file dictionaries
@@ -141,34 +134,26 @@ class MediaController:
         # Normalize root folders to ensure consistent path comparison
         root_folders = [str(Path(f["folder_path"]).resolve()) for f in self.database.get_folders()]
 
+        # Apply default pagination limit if not specified
+        if limit is None:
+            limit = 100
+
         if not category:
             # Return all files
             return self.get_media_files(
                 file_type=file_type if file_type != "all" else None,
                 search_query=search_query,
+                limit=limit,
+                offset=offset,
             )
 
         # Get files by category
         media_files = self.database.get_media_files_by_category(
-            category, root_folders, file_type, search_query
+            category, root_folders, file_type, search_query, limit, offset
         )
 
-        # Ensure thumbnails are generated
-        for media_file in media_files:
-            if not media_file.get("thumbnail_path"):
-                file_path = media_file.get("file_path")
-                file_type_str = media_file.get("file_type")
-                if file_path and file_type_str:
-                    thumbnail_path = self.thumbnail_generator.generate_thumbnail(
-                        file_path, file_type_str
-                    )
-                    if thumbnail_path:
-                        media_file["thumbnail_path"] = thumbnail_path
-                        file_id = media_file.get("id")
-                        if file_id:
-                            self.database.update_media_file(
-                                file_id, {"thumbnail_path": thumbnail_path}
-                            )
+        # Note: Thumbnail generation is now handled asynchronously in the UI
+        # to avoid blocking the main thread with large datasets
 
         return media_files
 

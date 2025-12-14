@@ -1,8 +1,26 @@
 """File utilities for media file detection and metadata extraction."""
 
+import contextlib
 import os
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+
+@contextlib.contextmanager
+def suppress_stderr():
+    """Temporarily suppress stderr to hide FFmpeg/AV1 error messages.
+    
+    Yields:
+        None
+    """
+    with open(os.devnull, 'w') as devnull:
+        old_stderr = sys.stderr
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stderr = old_stderr
 
 
 def get_media_extensions() -> Dict[str, List[str]]:
@@ -135,13 +153,39 @@ def get_file_duration(file_path: str) -> Optional[float]:
         elif file_type == "video":
             import cv2
 
-            cap = cv2.VideoCapture(file_path)
-            if cap.isOpened():
-                fps = cap.get(cv2.CAP_PROP_FPS)
-                frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-                cap.release()
-                if fps > 0:
-                    return frame_count / fps
+            cap = None
+            # Suppress OpenCV logging to hide FFmpeg/AV1 warnings
+            old_log_level = cv2.getLogLevel()
+            cv2.setLogLevel(0)  # Set to SILENT to suppress all OpenCV/FFmpeg messages
+
+            try:
+                # Suppress stderr to hide FFmpeg/AV1 error messages (additional layer)
+                with suppress_stderr():
+                    cap = cv2.VideoCapture(file_path)
+                    if not cap.isOpened():
+                        return None
+
+                    # Handle potential AV1/codec errors
+                    try:
+                        fps = cap.get(cv2.CAP_PROP_FPS)
+                        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+                    except (ValueError, OverflowError):
+                        # AV1 or other codec issues may cause invalid values
+                        return None
+
+                    if fps > 0 and frame_count > 0:
+                        return frame_count / fps
+            except (OSError, IOError, MemoryError):
+                # Handle AV1 codec errors, missing headers, or memory issues
+                return None
+            finally:
+                # Restore original OpenCV log level
+                cv2.setLogLevel(old_log_level)
+                if cap is not None:
+                    try:
+                        cap.release()
+                    except Exception:
+                        pass
     except Exception:
         pass
 
@@ -183,17 +227,45 @@ def get_video_dimensions(file_path: str) -> Optional[Tuple[int, int]]:
     if file_type != "video":
         return None
 
+    cap = None
     try:
         import cv2
 
-        cap = cv2.VideoCapture(file_path)
-        if cap.isOpened():
-            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            cap.release()
-            return (width, height)
+        # Suppress OpenCV logging to hide FFmpeg/AV1 warnings
+        old_log_level = cv2.getLogLevel()
+        cv2.setLogLevel(0)  # Set to SILENT to suppress all OpenCV/FFmpeg messages
+
+        try:
+            # Suppress stderr to hide FFmpeg/AV1 error messages (additional layer)
+            with suppress_stderr():
+                cap = cv2.VideoCapture(file_path)
+                if not cap.isOpened():
+                    return None
+
+                # Handle potential AV1/codec errors
+                try:
+                    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                except (ValueError, OverflowError):
+                    # AV1 or other codec issues may cause invalid values
+                    return None
+
+                if width > 0 and height > 0:
+                    return (width, height)
+        finally:
+            # Restore original OpenCV log level
+            cv2.setLogLevel(old_log_level)
+    except (OSError, IOError, MemoryError):
+        # Handle AV1 codec errors, missing headers, or memory issues
+        return None
     except Exception:
         pass
+    finally:
+        if cap is not None:
+            try:
+                cap.release()
+            except Exception:
+                pass
 
     return None
 

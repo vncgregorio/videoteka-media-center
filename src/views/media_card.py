@@ -142,4 +142,12 @@ class MediaCard(QFrame):
         self.thumbnail_path = thumbnail_path
         self._load_thumbnail()
 
+    def clear_thumbnail(self) -> None:
+        """Clear thumbnail to free memory."""
+        if self.thumbnail_label:
+            self.thumbnail_label.clear()
+            # Clear pixmap to free memory
+            self.thumbnail_label.setPixmap(QPixmap())
+        self.thumbnail_path = None
+
 
