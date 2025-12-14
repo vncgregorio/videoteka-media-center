@@ -375,14 +375,14 @@ class Database:
         
         Returns the complete relative path from root to folder, joined with " > ".
         Example: if root is "/home/user/youtube" and folder is 
-        "/home/user/youtube/investimentos/ações", returns "investimentos > ações".
+        "/home/user/youtube/investments/stocks", returns "investments > stocks".
 
         Args:
             folder_path: Full folder path (should be normalized/resolved)
             root_folders: List of root folder paths (should be normalized/resolved)
 
         Returns:
-            Full category path like "investimentos > ações" or None
+            Full category path like "investments > stocks" or None
         """
         from pathlib import Path
 
@@ -409,7 +409,7 @@ class Database:
         """Get media files filtered by category.
 
         Args:
-            category: Category name to filter by (can be full path like "investimentos > ações")
+            category: Category name to filter by (can be full path like "investments > stocks")
             root_folders: List of root folder paths
             file_type: Optional filter by media type
             search_query: Optional search query
@@ -428,7 +428,7 @@ class Database:
             # Normalize folder path for comparison
             normalized_folder = str(Path(folder_path).resolve())
             cat = self._get_category_from_path(normalized_folder, normalized_root_folders)
-            # Match exact category (now supports full paths like "investimentos > ações")
+            # Match exact category (now supports full paths like "investments > stocks")
             # Only match if cat is not None and matches category
             if cat is not None and cat == category:
                 matching_folders.append(folder_path)

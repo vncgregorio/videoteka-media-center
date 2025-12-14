@@ -44,9 +44,9 @@ def main() -> int:
         if not controller.initialize():
             QMessageBox.critical(
                 None,
-                "Erro",
-                "Não foi possível inicializar o banco de dados.\n"
-                "Verifique as permissões do diretório de dados.",
+                "Error",
+                "Could not initialize the database.\n"
+                "Check the data directory permissions.",
             )
             return 1
 
@@ -71,8 +71,8 @@ def main() -> int:
     except Exception as e:
         QMessageBox.critical(
             None,
-            "Erro Fatal",
-            f"Ocorreu um erro fatal:\n{str(e)}\n\nA aplicação será encerrada.",
+            "Fatal Error",
+            f"A fatal error occurred:\n{str(e)}\n\nThe application will exit.",
         )
         return 1
 

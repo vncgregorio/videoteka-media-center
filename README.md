@@ -1,38 +1,38 @@
 # Videoteka Media Center
 
-Um centro de mídia desktop moderno para Linux com interface estilo streaming.
+A modern desktop media center for Linux with streaming-style interface.
 
-## Características
+## Features
 
-- 🎬 Interface estilo streaming (Netflix, Amazon Prime, etc.)
-- 📁 Suporte para vídeos, áudios, imagens e documentos PDF
-- 🖼️ Geração automática de thumbnails
-- ⌨️ Navegação completa por teclado
-- 🔊 Preview de áudio (30 segundos)
-- 📄 Visualização de primeira página de PDFs
-- 💾 Banco de dados SQLite portável
-- 🎨 Tema escuro moderno
+- 🎬 Streaming-style interface (Netflix, Amazon Prime, etc.)
+- 📁 Support for videos, audio, images, and PDF documents
+- 🖼️ Automatic thumbnail generation
+- ⌨️ Full keyboard navigation
+- 🔊 Audio preview (30 seconds)
+- 📄 First page PDF visualization
+- 💾 Portable SQLite database
+- 🎨 Modern dark theme
 
-## Requisitos
+## Requirements
 
-- Python 3.9 ou superior
+- Python 3.9 or higher
 - Qt6 (PySide6)
-- Bibliotecas Python (veja requirements.txt)
-- **Dependências do sistema** (necessárias para Qt 6.5+):
-  - `libxcb-cursor0` ou `libxcb-cursor1` (dependendo da distribuição)
-  - Outras dependências xcb (geralmente já instaladas)
+- Python libraries (see requirements.txt)
+- **System dependencies** (required for Qt 6.5+):
+  - `libxcb-cursor0` or `libxcb-cursor1` (depending on distribution)
+  - Other xcb dependencies (usually already installed)
 
-## Instalação
+## Installation
 
-### Desenvolvimento
+### Development
 
-1. Clone o repositório:
+1. Clone the repository:
 ```bash
 git clone https://github.com/videoteka/media-center.git
 cd media-center
 ```
 
-2. Instale as dependências do sistema (necessárias para Qt 6.5+):
+2. Install system dependencies (required for Qt 6.5+):
 ```bash
 # Ubuntu/Debian/Linux Mint
 sudo apt update
@@ -45,40 +45,40 @@ sudo dnf install libxcb-cursor libxcb-xinerama libxcb-xfixes libxcb-render libxc
 sudo pacman -S libxcb-cursor libxcb-xinerama libxcb-xfixes libxcb-render libxcb-shape
 ```
 
-**Nota**: Se `libxcb-cursor0` não estiver disponível na sua distribuição, tente `libxcb-cursor1` ou apenas `libxcb-cursor`.
+**Note**: If `libxcb-cursor0` is not available in your distribution, try `libxcb-cursor1` or just `libxcb-cursor`.
 
-3. Crie um ambiente virtual:
+3. Create a virtual environment:
 ```bash
 python3 -m venv venv
-source venv/bin/activate  # No Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-4. Instale as dependências Python:
+4. Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Execute a aplicação:
+5. Run the application:
 ```bash
 python -m src.main
 ```
 
-### Empacotamento
+### Packaging
 
 #### AppImage
 
-Para criar um AppImage:
+To create an AppImage:
 
 ```bash
 cd packaging/appimage
 appimage-builder --recipe AppImageBuilder.yml
 ```
 
-O AppImage será gerado no diretório de build.
+The AppImage will be generated in the build directory.
 
 #### Flatpak
 
-Para criar um Flatpak:
+To create a Flatpak:
 
 ```bash
 cd packaging/flatpak
@@ -86,118 +86,116 @@ flatpak-builder build org.videoteka.MediaCenter.yml
 flatpak-builder --run build org.videoteka.MediaCenter.yml videoteka
 ```
 
-## Uso
+## Usage
 
-### Primeira Execução
+### First Run
 
-Na primeira execução, a aplicação mostrará um assistente de configuração onde você pode:
+On first run, the application will show a setup wizard where you can:
 
-1. Selecionar as pastas que contêm seus arquivos multimídia
-2. Confirmar e iniciar o escaneamento
-3. Aguardar o processamento dos arquivos
+1. Select the folders that contain your multimedia files
+2. Confirm and start scanning
+3. Wait for file processing
 
-### Navegação
+### Navigation
 
-- **Setas**: Navegar entre os cards de mídia
-- **Enter**: Abrir o arquivo selecionado com o aplicativo padrão
-- **Esc**: Fechar previews/diálogos
-- **Home/End**: Ir para o primeiro/último item
-- **Filtros**: Use os botões na barra lateral para filtrar por tipo
+- **Arrow keys**: Navigate between media cards
+- **Enter**: Open the selected file with the default application
+- **Esc**: Close previews/dialogs
+- **Home/End**: Go to first/last item
+- **Filters**: Use the buttons in the sidebar to filter by type
 
-### Filtros
+### Filters
 
-- **Todos**: Mostra todos os arquivos
-- **Vídeos**: Apenas arquivos de vídeo
-- **Áudios**: Apenas arquivos de áudio
-- **Imagens**: Apenas imagens
-- **Documentos**: Apenas PDFs
+- **All**: Shows all files
+- **Videos**: Only video files
+- **Audio**: Only audio files
+- **Images**: Only images
+- **Documents**: Only PDFs
 
-Use a barra de busca para encontrar arquivos por nome.
+Use the search bar to find files by name.
 
-## Formatos Suportados
+## Supported Formats
 
-### Vídeo
+### Video
 - MP4, MKV, AVI, MOV, WMV, FLV, WebM, M4V, MPG, MPEG, 3GP
 
-### Áudio
+### Audio
 - MP3, FLAC, WAV, OGG, M4A, AAC, WMA, Opus, AMR
 
-### Imagem
+### Image
 - JPG, JPEG, PNG, GIF, BMP, WebP, SVG, TIFF, ICO
 
-### Documento
+### Document
 - PDF
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 videoteka-media-center/
 ├── src/
-│   ├── main.py              # Ponto de entrada
-│   ├── models/              # Modelos de dados
-│   ├── views/               # Componentes de UI
-│   ├── controllers/         # Controladores
-│   ├── utils/               # Utilitários
-│   └── resources/           # Recursos (estilos, ícones)
-├── tests/                   # Testes unitários
-├── packaging/               # Configurações de empacotamento
-├── data/                    # Dados da aplicação (SQLite, thumbnails)
-└── requirements.txt        # Dependências Python
+│   ├── main.py              # Entry point
+│   ├── models/              # Data models
+│   ├── views/               # UI components
+│   ├── controllers/         # Controllers
+│   ├── utils/               # Utilities
+│   └── resources/           # Resources (styles, icons)
+├── tests/                   # Unit tests
+├── packaging/               # Packaging configurations
+├── data/                    # Application data (SQLite, thumbnails)
+└── requirements.txt        # Python dependencies
 ```
 
-## Desenvolvimento
+## Development
 
-### Executar Testes
+### Run Tests
 
 ```bash
 python -m pytest tests/
 ```
 
-### Contribuir
+### Contributing
 
-Contribuições são bem-vindas! Por favor:
+Contributions are welcome! Please:
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+1. Fork the project
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Versionamento
+## Versioning
 
-Este projeto segue [Semantic Versioning](https://semver.org/):
-- **MAJOR**: Mudanças incompatíveis na API
-- **MINOR**: Novas funcionalidades compatíveis
-- **PATCH**: Correções de bugs compatíveis
+This project follows [Semantic Versioning](https://semver.org/):
+- **MAJOR**: Incompatible API changes
+- **MINOR**: Backwards-compatible new features
+- **PATCH**: Backwards-compatible bug fixes
 
-Versão atual: **0.1.0**
+Current version: **0.1.0**
 
-## Licença
+## License
 
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Roadmap
 
-- [ ] Suporte a playlists
-- [ ] Metadados avançados (IMDB para filmes, tags)
-- [ ] Busca avançada
-- [ ] Organização automática
-- [ ] Suporte a streaming de rede
-- [ ] Temas personalizáveis
-- [ ] Suporte a legendas
-- [ ] Player de mídia integrado
+- [ ] Playlist support
+- [ ] Advanced metadata (IMDB for movies, tags)
+- [ ] Advanced search
+- [ ] Automatic organization
+- [ ] Network streaming support
+- [ ] Customizable themes
+- [ ] Subtitle support
+- [ ] Integrated media player
 
-## Suporte
+## Support
 
-Para reportar bugs ou solicitar funcionalidades, abra uma issue no GitHub.
+To report bugs or request features, open an issue on GitHub.
 
-## Autores
+## Authors
 
 - Videoteka Team
 
-## Agradecimentos
+## Acknowledgments
 
-- PySide6 pela excelente biblioteca Qt
-- Comunidade open source
-
-
+- PySide6 for the excellent Qt library
+- Open source community

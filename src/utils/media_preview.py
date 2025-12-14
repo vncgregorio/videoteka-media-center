@@ -30,7 +30,7 @@ class AudioPreviewWidget(QWidget):
         """Setup preview UI."""
         layout = QVBoxLayout(self)
 
-        label = QLabel("Preview de Áudio")
+        label = QLabel("Audio Preview")
         label.setStyleSheet("color: #ffffff; font-size: 14px;")
         layout.addWidget(label)
 
@@ -245,7 +245,7 @@ def show_media_preview(file_path: str, file_type: str, parent=None) -> None:
     """
     if file_type == "audio":
         dialog = QDialog(parent)
-        dialog.setWindowTitle("Preview de Áudio")
+        dialog.setWindowTitle("Audio Preview")
         layout = QVBoxLayout(dialog)
         preview = AudioPreviewWidget(file_path, dialog)
         layout.addWidget(preview)
