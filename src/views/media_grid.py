@@ -2,7 +2,7 @@
 
 from typing import List, Optional, Dict, Tuple
 
-from PySide6.QtCore import Qt, Signal, QSize, QTimer
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QKeyEvent, QCloseEvent
 from PySide6.QtWidgets import (
     QWidget,
@@ -14,6 +14,25 @@ from PySide6.QtWidgets import (
 
 from .media_card import MediaCard
 from ..utils.thumbnail_worker import ThumbnailWorker
+
+
+class GridConfig:
+    """Configuration constants for the media grid."""
+    
+    # Grid layout
+    COLUMNS = 4
+    
+    # Card dimensions (estimated for lazy loading calculations)
+    CARD_HEIGHT = 250  # Approximate height including thumbnail and margins
+    CARD_THUMBNAIL_WIDTH = 300
+    CARD_THUMBNAIL_HEIGHT = 200
+    
+    # Lazy loading
+    ITEMS_PER_PAGE = 50  # Number of items to render at once
+    LOAD_MORE_THRESHOLD = 20  # Load more when this many items from end
+    
+    # Timing
+    SCROLL_DEBOUNCE_MS = 100  # Debounce time for scroll events
 
 
 class GridScrollArea(QScrollArea):
@@ -60,7 +79,7 @@ class MediaGrid(QWidget):
         super().__init__(parent)
         self.cards: List[MediaCard] = []
         self.focused_media_index = -1  # Tracks position in all_media_files, not cards
-        self.grid_columns = 4  # Number of columns in the grid
+        self.grid_columns = GridConfig.COLUMNS
         self.card_positions: Dict[int, Tuple[int, int]] = {}  # media_index -> (row, col)
         
         # Lazy loading support
@@ -68,8 +87,8 @@ class MediaGrid(QWidget):
         self.thumbnail_generator = None
         self.thumbnail_workers: Dict[str, ThumbnailWorker] = {}  # file_path -> worker
         self.visible_range: Tuple[int, int] = (0, 0)  # (start_index, end_index)
-        self.items_per_page = 50  # Number of items to render at once
-        self.load_more_threshold = 20  # Load more when this many items from end
+        self.items_per_page = GridConfig.ITEMS_PER_PAGE
+        self.load_more_threshold = GridConfig.LOAD_MORE_THRESHOLD
         self.card_to_index: Dict[MediaCard, int] = {}  # card -> media_index
         
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -179,8 +198,7 @@ class MediaGrid(QWidget):
         scroll_value = scrollbar.value()
         
         # Estimate which items should be visible
-        # Each card is approximately 250px tall (200px thumbnail + margins)
-        card_height = 250
+        card_height = GridConfig.CARD_HEIGHT
         cards_per_row = self.grid_columns
         rows_visible = max(3, (viewport_height // card_height) + 2)  # Show a bit extra
         items_visible = rows_visible * cards_per_row
@@ -312,7 +330,7 @@ class MediaGrid(QWidget):
     
     def _on_scroll(self) -> None:
         """Handle scroll event (debounced)."""
-        self.scroll_timer.start(100)  # Debounce scroll events
+        self.scroll_timer.start(GridConfig.SCROLL_DEBOUNCE_MS)
 
     def _get_card_position(self, media_index: int) -> Optional[Tuple[int, int]]:
         """Get grid position (row, col) of media item at index.
@@ -387,11 +405,42 @@ class MediaGrid(QWidget):
         if card:
             self.scroll_area.ensureWidgetVisible(card)
 
-    def focus_right(self) -> bool:
-        """Focus the next media item in the same row (next column).
+    def _calculate_media_index(self, row: int, col: int) -> Optional[int]:
+        """Calculate media index from grid position.
+
+        Args:
+            row: Row number (0-based)
+            col: Column number (0-based)
 
         Returns:
-            True if focus moved, False if already at end of row
+            Media index or None if position is invalid
+        """
+        if row < 0 or col < 0 or col >= self.grid_columns:
+            return None
+        index = row * self.grid_columns + col
+        return index if 0 <= index < len(self.all_media_files) else None
+
+    def _get_current_position(self) -> Optional[Tuple[int, int]]:
+        """Get current (row, col) position from focused_media_index.
+
+        Returns:
+            Tuple of (row, col) or None if no focus
+        """
+        if self.focused_media_index < 0 or not self.all_media_files:
+            return None
+        row = self.focused_media_index // self.grid_columns
+        col = self.focused_media_index % self.grid_columns
+        return (row, col)
+
+    def _navigate_to_position(self, delta_row: int, delta_col: int) -> bool:
+        """Navigate to position relative to current, handling bounds.
+
+        Args:
+            delta_row: Change in row (positive = down, negative = up)
+            delta_col: Change in column (positive = right, negative = left)
+
+        Returns:
+            True if navigation succeeded, False otherwise
         """
         if not self.all_media_files:
             return False
@@ -399,18 +448,31 @@ class MediaGrid(QWidget):
         # If no item has focus, start from first
         if self.focused_media_index < 0:
             return self._focus_media_index(0)
-
-        # Calculate next media index
-        current_row = self.focused_media_index // self.grid_columns
-        current_col = self.focused_media_index % self.grid_columns
-        next_col = current_col + 1
         
-        if next_col < self.grid_columns:
-            next_media_index = current_row * self.grid_columns + next_col
-            if next_media_index < len(self.all_media_files):
-                return self._focus_media_index(next_media_index)
+        pos = self._get_current_position()
+        if not pos:
+            return False
+        
+        new_row = pos[0] + delta_row
+        new_col = pos[1] + delta_col
+        
+        # Check bounds
+        if new_row < 0 or new_col < 0 or new_col >= self.grid_columns:
+            return False
+        
+        new_index = self._calculate_media_index(new_row, new_col)
+        if new_index is not None:
+            return self._focus_media_index(new_index)
         
         return False
+
+    def focus_right(self) -> bool:
+        """Focus the next media item in the same row (next column).
+
+        Returns:
+            True if focus moved, False if already at end of row
+        """
+        return self._navigate_to_position(0, 1)
 
     def focus_left(self) -> bool:
         """Focus the previous media item in the same row (previous column).
@@ -418,24 +480,7 @@ class MediaGrid(QWidget):
         Returns:
             True if focus moved, False if already at start of row
         """
-        if not self.all_media_files:
-            return False
-        
-        # If no item has focus, start from first
-        if self.focused_media_index < 0:
-            return self._focus_media_index(0)
-
-        # Calculate previous media index
-        current_row = self.focused_media_index // self.grid_columns
-        current_col = self.focused_media_index % self.grid_columns
-        prev_col = current_col - 1
-
-        if prev_col >= 0:
-            prev_media_index = current_row * self.grid_columns + prev_col
-            if prev_media_index >= 0:
-                return self._focus_media_index(prev_media_index)
-        
-        return False
+        return self._navigate_to_position(0, -1)
 
     def focus_down(self) -> bool:
         """Focus the media item in the same column, next row.
@@ -443,23 +488,7 @@ class MediaGrid(QWidget):
         Returns:
             True if focus moved, False if already at last row
         """
-        if not self.all_media_files:
-            return False
-        
-        # If no item has focus, start from first
-        if self.focused_media_index < 0:
-            return self._focus_media_index(0)
-
-        # Calculate next row media index
-        current_row = self.focused_media_index // self.grid_columns
-        current_col = self.focused_media_index % self.grid_columns
-        next_row = current_row + 1
-        next_media_index = next_row * self.grid_columns + current_col
-
-        if next_media_index < len(self.all_media_files):
-            return self._focus_media_index(next_media_index)
-        
-        return False
+        return self._navigate_to_position(1, 0)
 
     def focus_up(self) -> bool:
         """Focus the media item in the same column, previous row.
@@ -467,24 +496,7 @@ class MediaGrid(QWidget):
         Returns:
             True if focus moved, False if already at first row
         """
-        if not self.all_media_files:
-            return False
-        
-        # If no item has focus, start from first
-        if self.focused_media_index < 0:
-            return self._focus_media_index(0)
-
-        # Calculate previous row media index
-        current_row = self.focused_media_index // self.grid_columns
-        current_col = self.focused_media_index % self.grid_columns
-        prev_row = current_row - 1
-
-        if prev_row >= 0:
-            prev_media_index = prev_row * self.grid_columns + current_col
-            if prev_media_index >= 0:
-                return self._focus_media_index(prev_media_index)
-        
-        return False
+        return self._navigate_to_position(-1, 0)
 
     def focus_next(self) -> bool:
         """Focus the next media item (linear navigation).
@@ -569,7 +581,6 @@ class MediaGrid(QWidget):
         # Default: let parent handle
         super().keyPressEvent(event)
 
-    
     def closeEvent(self, event: QCloseEvent) -> None:
         """Handle widget close event - cleanup all threads.
         

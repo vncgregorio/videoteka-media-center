@@ -13,6 +13,19 @@ from PySide6.QtWidgets import (
 )
 
 
+class CardConfig:
+    """Configuration constants for media cards."""
+    
+    # Thumbnail dimensions
+    THUMBNAIL_WIDTH = 300
+    THUMBNAIL_HEIGHT = 200
+    
+    # Font sizes
+    FONT_SIZE_NAME = 12
+    FONT_SIZE_TYPE = 10
+    FONT_SIZE_PLACEHOLDER = 48
+
+
 class MediaCard(QFrame):
     """Card widget for displaying a media file."""
 
@@ -48,7 +61,7 @@ class MediaCard(QFrame):
 
         # Thumbnail
         self.thumbnail_label = QLabel()
-        self.thumbnail_label.setFixedSize(300, 200)
+        self.thumbnail_label.setFixedSize(CardConfig.THUMBNAIL_WIDTH, CardConfig.THUMBNAIL_HEIGHT)
         self.thumbnail_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.thumbnail_label.setStyleSheet(
             "background-color: #2a2a2a; border-radius: 5px;"
@@ -60,7 +73,7 @@ class MediaCard(QFrame):
         self.name_label = QLabel(self.file_name)
         self.name_label.setWordWrap(True)
         self.name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.name_label.setStyleSheet("color: #ffffff; font-size: 12px;")
+        self.name_label.setStyleSheet(f"color: #ffffff; font-size: {CardConfig.FONT_SIZE_NAME}px;")
         layout.addWidget(self.name_label)
 
         # Type indicator
@@ -68,7 +81,7 @@ class MediaCard(QFrame):
         if type_icon:
             type_label = QLabel(type_icon)
             type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            type_label.setStyleSheet("color: #888888; font-size: 10px;")
+            type_label.setStyleSheet(f"color: #888888; font-size: {CardConfig.FONT_SIZE_TYPE}px;")
             layout.addWidget(type_label)
 
         self.setStyleSheet(
@@ -119,7 +132,7 @@ class MediaCard(QFrame):
         # Default placeholder
         self.thumbnail_label.setText(self._get_type_icon())
         self.thumbnail_label.setStyleSheet(
-            "background-color: #2a2a2a; border-radius: 5px; color: #666666; font-size: 48px;"
+            f"background-color: #2a2a2a; border-radius: 5px; color: #666666; font-size: {CardConfig.FONT_SIZE_PLACEHOLDER}px;"
         )
 
     def mousePressEvent(self, event) -> None:

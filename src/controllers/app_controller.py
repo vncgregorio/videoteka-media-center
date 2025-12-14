@@ -99,19 +99,26 @@ class AppController:
         # Show shortcuts dialog on first run (after window is shown)
         self._show_shortcuts_if_needed()
 
+    def _normalize_category(self, category: Optional[str]) -> str:
+        """Normalize category value, ensuring it's not None.
+        
+        Args:
+            category: Category value (may be None)
+            
+        Returns:
+            Normalized category string (empty string if None)
+        """
+        return category if category is not None else ""
+
     def _on_category_changed(self, category: str) -> None:
         """Handle category change.
         
         Args:
             category: Selected category name
         """
-        # Validate category - ensure it's not None
-        if category is None:
-            category = ""
-        
         # Load media for selected category
         # IMPORTANT: Don't move focus - keep focus on categories
-        self._load_media(category=category)
+        self._load_media(category=self._normalize_category(category))
 
     def _load_media(self, category: Optional[str] = None, limit: Optional[int] = None, offset: Optional[int] = None) -> None:
         """Load media files and display in grid.
@@ -128,9 +135,8 @@ class AppController:
         if category is None:
             category = self.main_window.category_panel.get_selected_category()
         
-        # Ensure category is not None
-        if category is None:
-            category = ""
+        # Normalize category
+        category = self._normalize_category(category)
 
         # Apply default pagination limit if not specified
         if limit is None:
